@@ -1,6 +1,6 @@
 [project]
 name = "pyomo_windows"
-license = {}
+# license = {}
 authors = [
     { email = "oneirag@yahoo.es", name = "Oscar Neira" }
 ]
@@ -13,7 +13,7 @@ dynamic = ["dependencies", "version"]
 classifiers = [
     "Programming Language :: Python",
     "License :: Other/Proprietary License",
-    "Private :: Do Not Upload"      # Avoid uploading to pypi
+#     "Private :: Do Not Upload"      # Avoid uploading to pypi
 ]
 
 [tool.setuptools.dynamic]
