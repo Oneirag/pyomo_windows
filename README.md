@@ -31,3 +31,7 @@ res = opt.solve(model)
 You might face errors in the first execution. 
 If in your install you cannot write in the default folder, try
 Optionally, if you want models to be downloaded in a different location, than 
+
+## Testing
+Run tests in `test_solvers.py`. First execution will be slow as models have to be downloaded
+
