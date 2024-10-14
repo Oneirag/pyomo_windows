@@ -1,0 +1,5 @@
+# pyomo
+pyomo[optional]   # Includes, mainly: matplotlib, networkx, numpy, openpyxl, pandas, pint, pymysql, pyodbc, pyro4, scipy, sympy, and xlrd
+# For downloading solvers
+httpx
+beautifulsoup4

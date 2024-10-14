@@ -1,0 +1,42 @@
+[project]
+name = "pyomo_windows"
+license = {}
+authors = [
+    { email = "oneirag@yahoo.es", name = "Oscar Neira" }
+]
+readme = "README.md"
+requires-python = ">=3.11"
+description = "Utilities to install pyomo solvers in windows without anaconda"
+
+dynamic = ["dependencies", "version"]
+
+classifiers = [
+    "Programming Language :: Python",
+    "License :: Other/Proprietary License",
+    "Private :: Do Not Upload"      # Avoid uploading to pypi
+]
+
+[tool.setuptools.dynamic]
+dependencies = { file = [
+    "requirements.txt",
+] }
+version = { attr = "pyomo_windows.__version__" }
+
+[tool.setuptools.packages.find]
+# scanning for namespace packages is true by default in pyproject.toml, so
+# you do NOT need to include the following line.
+namespaces = true
+where = ["src"]
+exclude = [
+    'src/poc*',
+]
+
+[tool.setuptools.package-data]
+bau360_bot = [
+]
+
+[build-system]
+requires = [
+    "setuptools",
+]
+build-backend = "setuptools.build_meta"
