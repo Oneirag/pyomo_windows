@@ -1,4 +1,5 @@
 import re
+import sys
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -6,7 +7,7 @@ from typing import List
 
 import httpx
 from bs4 import BeautifulSoup
-from ong_utils import is_windows
+is_windows = sys.platform == "nt"
 
 from pyomo_windows import logger, solver_executables, get_target_folder
 
