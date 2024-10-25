@@ -3,3 +3,5 @@ pyomo[optional]   # Includes, mainly: matplotlib, networkx, numpy, openpyxl, pan
 # For downloading solvers
 httpx
 beautifulsoup4
+ong_utils
+
