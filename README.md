@@ -18,17 +18,6 @@ downloader.download_cbc()       # Download coin-cbc
 downloader.download_ipopt()     # Download ipopt
 
 ```
-```mermaid
-gantt
-    title A Gantt Diagram
-    dateFormat YYYY-MM-DD
-    section Section
-        A task          :a1, 2014-01-01, 30d
-        Another task    :after a1, 20d
-    section Another
-        Task in Another :2014-01-12, 12d
-        another task    :24d
-```
 
 ## Use solvers
 Create your pyomo model and before executing it, call `get_solver` to get the desired solver. Remember that solver must be downloaded first as explained [here](#download-solvers).
