@@ -1,5 +1,6 @@
 import re
 import sys
+import os
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -18,8 +19,18 @@ if is_windows:
 else:
     ssl_verify = True
 
+import truststore
+truststore.inject_into_ssl()
 
 class DownloadSolvers:
+
+    @property
+    def destination(self) -> Path:
+        """Folder for downloading. It will be the folder where python executable is located"""
+        env_variable = "VIRTUAL_ENV"
+        if env_variable not in os.environ:
+            raise ValueError("Not executed in a virtual environment. You must run this script in a virtual environment")
+        return (Path(sys.executable).parent)
 
     def __init__(self, target: Path | str = None):
         """
@@ -29,9 +40,10 @@ class DownloadSolvers:
         """
         self.target = get_target_folder(target)
         self.client = httpx.Client(verify=ssl_verify, follow_redirects=True)
+        self.client = httpx.Client(follow_redirects=True)
         self.logger = logger
 
-    def __download(self, url: str, destination: Path, required_files: List[str]):
+    def __download(self, url: str, required_files: List[str]):
         """Downloads a file and returns file contents (in memory) and file name"""
         self.logger.info(f"Downloading {url}")
         contents = list()
@@ -53,22 +65,19 @@ class DownloadSolvers:
             for name in zip.namelist():
                 if any(re.match(pattern, name) for pattern in required_files):
                     destination_filename = name.split("/")[-1]
-                    (destination / destination_filename).write_bytes(zip.read(name))
+                    (self.destination / destination_filename).write_bytes(zip.read(name))
                 else:
-                    self.logger.warn(f"Skipping file: {name}")
+                    self.logger.warning(f"Skipping file: {name}")
 
     def download_glpk(self):
         solver = "glpk"
         url = "http://sourceforge.net/projects/winglpk/"
         url = "https://sourceforge.net/projects/winglpk/files/latest/download"
-        destination = self.target / solver
-        destination.mkdir(exist_ok=True)
         required_files = [
             rf".*/w64/{solver_executables[solver]}",
             r".*/w64/glpk_.*\.dll",
-
         ]
-        self.__download(url, destination, required_files)
+        self.__download(url, required_files)
         self.logger.info("finished!")
 
     def get_download_link_github(self, github_link: str, release: str, link_filter_pattern: str) -> str:
@@ -95,14 +104,12 @@ class DownloadSolvers:
                                                       release="3.14.16",
                                                       link_filter_pattern=r".*-md\.zip")
 
-        destination = self.target / solver
-        destination.mkdir(exist_ok=True)
         """All dll and executable of the bin folder"""
         required_files = [
             rf".*bin/.*\.exe",
             rf".*bin/.*\.dll",
         ]
-        self.__download(download_link, destination, required_files)
+        self.__download(download_link, required_files)
         self.logger.info("finished!")
 
     def download_cbc(self):
@@ -111,13 +118,11 @@ class DownloadSolvers:
                                                       release="2.10.12",
                                                       link_filter_pattern=r".*-windows-2022.*\.zip")
 
-        destination = self.target / solver
-        destination.mkdir(exist_ok=True)
         """All dll and executable of the bin folder"""
         required_files = [
             rf".*cbc\.exe",
         ]
-        self.__download(download_link, destination, required_files)
+        self.__download(download_link, required_files)
         self.logger.info("finished!")
 
 

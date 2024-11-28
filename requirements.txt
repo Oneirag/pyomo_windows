@@ -4,4 +4,5 @@ pyomo[optional]   # Includes, mainly: matplotlib, networkx, numpy, openpyxl, pan
 httpx
 beautifulsoup4
 ong_utils
+truststore
 
