@@ -8,6 +8,8 @@ from typing import List
 
 import httpx
 from bs4 import BeautifulSoup
+import importlib.util
+
 is_windows = sys.platform == "nt"
 
 from pyomo_windows import logger, solver_executables, get_target_folder
@@ -32,6 +34,14 @@ class DownloadSolvers:
             raise ValueError("Not executed in a virtual environment. You must run this script in a virtual environment")
         return (Path(sys.executable).parent)
 
+    def destination_lib(self, solver: str) -> Path:
+        """A destination as a subfolder in the pyomo_windows installation directory in the virtual environment"""
+        spec = importlib.util.find_spec("pyomo_windows")
+        retval = Path(spec.origin).with_name(solver)
+        retval.mkdir(exist_ok=True)
+        return retval
+
+
     def __init__(self, target: Path | str = None):
         """
         Init the downloader. Solvers are downloaded in this folder by default, or
@@ -43,7 +53,7 @@ class DownloadSolvers:
         self.client = httpx.Client(follow_redirects=True)
         self.logger = logger
 
-    def __download(self, url: str, required_files: List[str]):
+    def __download(self, url: str, required_files: List[str], solver_name: str):
         """Downloads a file and returns file contents (in memory) and file name"""
         self.logger.info(f"Downloading {url}")
         contents = list()
@@ -65,7 +75,10 @@ class DownloadSolvers:
             for name in zip.namelist():
                 if any(re.match(pattern, name) for pattern in required_files):
                     destination_filename = name.split("/")[-1]
-                    (self.destination / destination_filename).write_bytes(zip.read(name))
+                    for folder in self.destination, self.destination_lib(solver_name):
+                        destination_full_path = folder / destination_filename
+                        destination_full_path.write_bytes(zip.read(name))
+                        self.logger.info(f"File saved in {destination_full_path}")
                 else:
                     self.logger.warning(f"Skipping file: {name}")
 
@@ -77,7 +90,7 @@ class DownloadSolvers:
             rf".*/w64/{solver_executables[solver]}",
             r".*/w64/glpk_.*\.dll",
         ]
-        self.__download(url, required_files)
+        self.__download(url, required_files, solver_name="glpk")
         self.logger.info("finished!")
 
     def get_download_link_github(self, github_link: str, release: str, link_filter_pattern: str) -> str:
@@ -91,7 +104,7 @@ class DownloadSolvers:
         if github_link.endswith("/"):
             github_link = github_link[:-1]
         url = f"{github_link}/releases/expanded_assets/releases/{release}"
-        soup = BeautifulSoup(self.client.get(url), features="html.parser")
+        soup = BeautifulSoup(self.client.get(url).content, features="html.parser")
         links = soup.find_all("a")
         zips = [link for link in links if link.get("href").endswith(".zip")]
         download_path = [z.get("href") for z in zips if re.match(link_filter_pattern, z.get("href"))][0]
@@ -99,7 +112,7 @@ class DownloadSolvers:
         return download_url
 
     def download_ipopt(self):
-        solver = "ipopt"
+        """Downloads ipopt solver"""
         download_link = self.get_download_link_github(github_link="https://github.com/coin-or/Ipopt",
                                                       release="3.14.16",
                                                       link_filter_pattern=r".*-md\.zip")
@@ -109,11 +122,11 @@ class DownloadSolvers:
             rf".*bin/.*\.exe",
             rf".*bin/.*\.dll",
         ]
-        self.__download(download_link, required_files)
+        self.__download(download_link, required_files, solver_name="ipopt")
         self.logger.info("finished!")
 
     def download_cbc(self):
-        solver = "cbc"
+        """Downloads coin-or's CBC solver"""
         download_link = self.get_download_link_github(github_link="https://github.com/coin-or/Cbc",
                                                       release="2.10.12",
                                                       link_filter_pattern=r".*-windows-2022.*\.zip")
@@ -122,7 +135,7 @@ class DownloadSolvers:
         required_files = [
             rf".*cbc\.exe",
         ]
-        self.__download(download_link, required_files)
+        self.__download(download_link, required_files, solver_name="cbc")
         self.logger.info("finished!")
 
 
