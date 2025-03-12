@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 solver_executables = {
     "glpk": "glpsol.exe",
